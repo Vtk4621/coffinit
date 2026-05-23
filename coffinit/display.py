@@ -86,8 +86,9 @@ def build_repository_report(snapshot: RepositorySnapshot, assessment: Repository
     """Build the full Rich renderable for a repository diagnosis."""
 
     header = Text(f"🪣 coffinit — {snapshot.repository.full_name}", style="bold")
-    # Localized label for the score line (keeps i18n behavior)
-    label_text = t(f"labels.{assessment.label_key}")
+    # Localized label for the score line (assessment.label_key already
+    # contains the full i18n key, e.g. 'labels.alive')
+    label_text = t(assessment.label_key)
     score = Text(f"Score: {assessment.total_score} / 100  {label_text}", justify="center")
 
     # The text displayed ON the coffin art must be language-independent
