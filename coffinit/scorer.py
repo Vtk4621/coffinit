@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from .github import RepositorySnapshot
+from .i18n import t
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,7 +33,7 @@ class RepositoryAssessment:
     """Total diagnosis for a repository."""
 
     total_score: int
-    label: str
+    label_key: str
     coffin_state: str
     breakdown: ScoreBreakdown
 
@@ -52,10 +53,10 @@ def assess_repository(snapshot: RepositorySnapshot) -> RepositoryAssessment:
         author_activity=author_activity,
     )
     total_score = maintenance.score + pull_request_response.score + bug_backlog.score + author_activity.score
-    label, coffin_state = _label_for_score(total_score)
+    label_key, coffin_state = _label_for_score(total_score)
     return RepositoryAssessment(
         total_score=total_score,
-        label=label,
+        label_key=label_key,
         coffin_state=coffin_state,
         breakdown=breakdown,
     )
@@ -63,26 +64,26 @@ def assess_repository(snapshot: RepositorySnapshot) -> RepositoryAssessment:
 
 def _score_maintenance(last_commit_at: datetime | None, now: datetime) -> ScoreSection:
     if last_commit_at is None:
-        return ScoreSection("メンテナンス状況", 0, "最終コミットなし")
+        return ScoreSection("section.maintenance", 0, t("raw.no_last_commit"))
 
     days = _days_since(last_commit_at, now)
     score = _bucket_score(days, [(30, 25), (90, 18), (180, 10), (365, 5)], 0)
-    return ScoreSection("メンテナンス状況", score, f"最終コミットから{days}日")
+    return ScoreSection("section.maintenance", score, t("raw.last_commit_days").format(days=days))
 
 
 def _score_pull_request_response(latest_open_pr_created_at: datetime | None, now: datetime) -> ScoreSection:
     if latest_open_pr_created_at is None:
-        return ScoreSection("PRへの反応", 25, "オープンPRなし")
+        return ScoreSection("section.pull_request_response", 25, t("raw.no_open_pr"))
 
     days = _days_since(latest_open_pr_created_at, now)
     score = _bucket_score(days, [(14, 25), (30, 18), (90, 10), (180, 5)], 0)
-    return ScoreSection("PRへの反応", score, f"最新PRから{days}日")
+    return ScoreSection("section.pull_request_response", score, t("raw.latest_pr_days").format(days=days))
 
 
 def _score_bug_backlog(open_count: int, closed_count: int) -> ScoreSection:
     total = open_count + closed_count
     if total <= 0:
-        return ScoreSection("バグIssueの放置率", 25, "bugラベルIssueなし")
+        return ScoreSection("section.bug_backlog", 25, t("raw.no_bug_issues"))
 
     ratio = open_count / total
     percent = round(ratio * 100)
@@ -96,17 +97,17 @@ def _score_bug_backlog(open_count: int, closed_count: int) -> ScoreSection:
         score = 5
     else:
         score = 0
-    return ScoreSection("バグIssueの放置率", score, f"オープン率{percent}%")
+    return ScoreSection("section.bug_backlog", score, t("raw.open_rate").format(percent=percent))
 
 
 def _score_author_activity(contributor_last_commit_dates: tuple[datetime, ...], now: datetime) -> ScoreSection:
     if not contributor_last_commit_dates:
-        return ScoreSection("制作者のアクティビティ", 0, "コントリビューター情報なし")
+        return ScoreSection("section.author_activity", 0, t("raw.no_contributor_info"))
 
     latest_activity = max(contributor_last_commit_dates)
     days = _days_since(latest_activity, now)
     score = _bucket_score(days, [(30, 25), (90, 18), (180, 10), (365, 5)], 0)
-    return ScoreSection("制作者のアクティビティ", score, f"最近の活動から{days}日")
+    return ScoreSection("section.author_activity", score, t("raw.recent_activity_days").format(days=days))
 
 
 def _days_since(earlier: datetime, later: datetime) -> int:
@@ -123,9 +124,9 @@ def _bucket_score(value: int, thresholds: list[tuple[int, int]], default_score: 
 
 def _label_for_score(total_score: int) -> tuple[str, str]:
     if total_score >= 80:
-        return "✅ Alive", "全開"
+        return "labels.alive", "full"
     if total_score >= 50:
-        return "⚠️ Struggling", "半開き"
+        return "labels.struggling", "half"
     if total_score >= 20:
-        return "🪦 On The Bucket List", "ちょっと開いてる"
-    return "⚰️ Dead", "閉じてる"
+        return "labels.bucket", "small"
+    return "labels.dead", "closed"
