@@ -17,6 +17,7 @@ from .scorer import (
 	RepositoryAssessment,
 	assess_repository,
 )
+from .display import build_repository_report, render_coffin_art
 
 __all__ = [
 	"GitHubAPIError",
@@ -32,4 +33,6 @@ __all__ = [
 	"ScoreSection",
 	"RepositoryAssessment",
 	"assess_repository",
+	"build_repository_report",
+	"render_coffin_art",
 ]
