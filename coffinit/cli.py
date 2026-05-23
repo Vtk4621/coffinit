@@ -7,6 +7,8 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 import typer
 from dotenv import load_dotenv
 import os
+import sys
+from typing import Final
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -33,6 +35,95 @@ except PackageNotFoundError:  # pragma: no cover - package metadata is unavailab
 
 console = Console()
 app = typer.Typer(add_completion=False, help="GitHub OSSの生死を診断するCLIです。")
+
+
+def _read_key() -> str:
+    """Read a single keypress and return one of: 'left','right','enter','other'."""
+    if os.name == "nt":
+        import msvcrt
+
+        first = msvcrt.getwch()
+        if first == "\x00" or first == "\xe0":
+            second = msvcrt.getwch()
+            if second == "K":
+                return "left"
+            if second == "M":
+                return "right"
+        if first == "\r":
+            return "enter"
+        return "other"
+    else:
+        import tty
+        import termios
+
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch1 = sys.stdin.read(1)
+            if ch1 == "\x1b":
+                ch2 = sys.stdin.read(1)
+                if ch2 == "[":
+                    ch3 = sys.stdin.read(1)
+                    if ch3 == "D":
+                        return "left"
+                    if ch3 == "C":
+                        return "right"
+            if ch1 == "\r" or ch1 == "\n":
+                return "enter"
+            return "other"
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+
+@app.command()
+def set_lang() -> None:
+    """Interactively choose the display language for this session.
+
+    Note: setting the language here cannot modify the parent shell's environment.
+    After selection this command prints the shell commands to export the
+    variable for your shell so you can copy/paste or `eval` them as appropriate.
+    """
+
+    options: Final = ["ja", "en"]
+    idx = 0
+    sys.stdout.write("Select language: Use ← → to choose, Enter to confirm\n")
+    sys.stdout.flush()
+
+    def _render(i: int) -> None:
+        parts = []
+        for n, opt in enumerate(options):
+            if n == i:
+                parts.append(f"\x1b[33m[{opt}]\x1b[0m")
+            else:
+                parts.append(f" {opt} ")
+        sys.stdout.write("\r" + " | ".join(parts))
+        sys.stdout.flush()
+
+    _render(idx)
+    while True:
+        key = _read_key()
+        if key == "left":
+            idx = (idx - 1) % len(options)
+            _render(idx)
+        elif key == "right":
+            idx = (idx + 1) % len(options)
+            _render(idx)
+        elif key == "enter":
+            break
+
+    chosen = options[idx]
+    sys.stdout.write("\n")
+    # set in-process for immediate effect in this process
+    os.environ["COFFINIT_LANG"] = chosen
+    # Print shell commands for the user to apply to their shell session
+    sys.stdout.write(f"Language selected: {chosen}\n")
+    sys.stdout.write("To apply this to your shell session, run:\n")
+    sys.stdout.write("  Bash / WSL / zsh:\n")
+    sys.stdout.write(f"    export COFFINIT_LANG={chosen}\n")
+    sys.stdout.write("  PowerShell:\n")
+    sys.stdout.write(f"    $env:COFFINIT_LANG = '{chosen}'\n")
+    sys.stdout.flush()
 
 
 @app.callback(invoke_without_command=True)
