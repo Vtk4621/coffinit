@@ -11,6 +11,12 @@ from .github import (
 	RepositoryMetadata,
 	RepositorySnapshot,
 )
+from .scorer import (
+	ScoreBreakdown,
+	ScoreSection,
+	RepositoryAssessment,
+	assess_repository,
+)
 
 __all__ = [
 	"GitHubAPIError",
@@ -22,4 +28,8 @@ __all__ = [
 	"GitHubRepositoryNotFoundError",
 	"RepositoryMetadata",
 	"RepositorySnapshot",
+	"ScoreBreakdown",
+	"ScoreSection",
+	"RepositoryAssessment",
+	"assess_repository",
 ]
