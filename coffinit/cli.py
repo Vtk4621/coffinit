@@ -25,6 +25,7 @@ from .github import (
 )
 from .scorer import assess_repository
 from .i18n import set_locale, t, get_locale
+from .config import get_saved_lang, save_lang
 
 
 try:
@@ -116,8 +117,17 @@ def set_lang() -> None:
     sys.stdout.write("\n")
     # set in-process for immediate effect in this process
     os.environ["COFFINIT_LANG"] = chosen
+
+    config_path = None
+    try:
+        config_path = save_lang(chosen)
+    except Exception:
+        config_path = None
+
     # Print shell commands for the user to apply to their shell session
     sys.stdout.write(f"Language selected: {chosen}\n")
+    if config_path is not None:
+        sys.stdout.write(f"Saved to config: {config_path}\n")
     sys.stdout.write("To apply this to your shell session, run:\n")
     sys.stdout.write("  Bash / WSL / zsh:\n")
     sys.stdout.write(f"    export COFFINIT_LANG={chosen}\n")
@@ -133,7 +143,9 @@ def root(ctx: typer.Context, lang: str | None = None) -> None:
     load_dotenv()
     # Allow language selection via CLI option or COFFINIT_LANG environment variable
     env_lang = os.getenv("COFFINIT_LANG")
-    selected = lang or env_lang or "ja"
+
+    saved_lang = get_saved_lang()
+    selected = lang or env_lang or saved_lang or "ja"
     set_locale(selected)
     if ctx.invoked_subcommand is None:
         _print_banner()

@@ -69,7 +69,7 @@ MESSAGES: dict[str, dict[str, Any]] = {
         "banner": """
     _________________________
    |                         |
-   |     🪣 coffinit       |
+   |       coffinit          |
    |  Things OSS projects    |
    |  do before they die.    |
    |_________________________|

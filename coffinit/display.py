@@ -24,7 +24,7 @@ COFFIN_ART = {
     |               |
     |    COFFIN     |
     |               |
-     \_____________/
+      \\_____________/
         """,
 
         # Lid overlaps roughly half of the coffin
@@ -35,7 +35,7 @@ COFFIN_ART = {
       |               |
       |    COFFIN     |
       |               |
-       \_____________/
+        \\_____________/
         """,
 
         # Lid overlaps about three quarters of the coffin
@@ -46,7 +46,7 @@ COFFIN_ART = {
  |                 |
  |    COFFIN       |
  |                 |
-    \_______________/
+    \\_______________/
         """,
 
         # Lid fully closed, covers the coffin
@@ -56,7 +56,7 @@ COFFIN_ART = {
  |                  |
  |   R.I.P.         |
  |                  |
-    \_________________/
+    \\_________________/
         """,
 }
 
