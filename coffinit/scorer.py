@@ -64,26 +64,26 @@ def assess_repository(snapshot: RepositorySnapshot) -> RepositoryAssessment:
 
 def _score_maintenance(last_commit_at: datetime | None, now: datetime) -> ScoreSection:
     if last_commit_at is None:
-        return ScoreSection("section.maintenance", 0, t("raw.no_last_commit"))
+        return ScoreSection("sections.maintenance", 0, t("raw.no_last_commit"))
 
     days = _days_since(last_commit_at, now)
     score = _bucket_score(days, [(30, 25), (90, 18), (180, 10), (365, 5)], 0)
-    return ScoreSection("section.maintenance", score, t("raw.last_commit_days").format(days=days))
+    return ScoreSection("sections.maintenance", score, t("raw.last_commit_days").format(days=days))
 
 
 def _score_pull_request_response(latest_open_pr_created_at: datetime | None, now: datetime) -> ScoreSection:
     if latest_open_pr_created_at is None:
-        return ScoreSection("section.pull_request_response", 25, t("raw.no_open_pr"))
+        return ScoreSection("sections.pull_request_response", 25, t("raw.no_open_pr"))
 
     days = _days_since(latest_open_pr_created_at, now)
     score = _bucket_score(days, [(14, 25), (30, 18), (90, 10), (180, 5)], 0)
-    return ScoreSection("section.pull_request_response", score, t("raw.latest_pr_days").format(days=days))
+    return ScoreSection("sections.pull_request_response", score, t("raw.latest_pr_days").format(days=days))
 
 
 def _score_bug_backlog(open_count: int, closed_count: int) -> ScoreSection:
     total = open_count + closed_count
     if total <= 0:
-        return ScoreSection("section.bug_backlog", 25, t("raw.no_bug_issues"))
+        return ScoreSection("sections.bug_backlog", 25, t("raw.no_bug_issues"))
 
     ratio = open_count / total
     percent = round(ratio * 100)
@@ -97,17 +97,17 @@ def _score_bug_backlog(open_count: int, closed_count: int) -> ScoreSection:
         score = 5
     else:
         score = 0
-    return ScoreSection("section.bug_backlog", score, t("raw.open_rate").format(percent=percent))
+    return ScoreSection("sections.bug_backlog", score, t("raw.open_rate").format(percent=percent))
 
 
 def _score_author_activity(contributor_last_commit_dates: tuple[datetime, ...], now: datetime) -> ScoreSection:
     if not contributor_last_commit_dates:
-        return ScoreSection("section.author_activity", 0, t("raw.no_contributor_info"))
+        return ScoreSection("sections.author_activity", 0, t("raw.no_contributor_info"))
 
     latest_activity = max(contributor_last_commit_dates)
     days = _days_since(latest_activity, now)
     score = _bucket_score(days, [(30, 25), (90, 18), (180, 10), (365, 5)], 0)
-    return ScoreSection("section.author_activity", score, t("raw.recent_activity_days").format(days=days))
+    return ScoreSection("sections.author_activity", score, t("raw.recent_activity_days").format(days=days))
 
 
 def _days_since(earlier: datetime, later: datetime) -> int:
