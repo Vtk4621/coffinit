@@ -6,6 +6,7 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 
 import typer
 from dotenv import load_dotenv
+import os
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -21,6 +22,7 @@ from .github import (
     GitHubRepositoryNotFoundError,
 )
 from .scorer import assess_repository
+from .i18n import set_locale, t, get_locale
 
 
 try:
@@ -34,10 +36,14 @@ app = typer.Typer(add_completion=False, help="GitHub OSSの生死を診断する
 
 
 @app.callback(invoke_without_command=True)
-def root(ctx: typer.Context) -> None:
+def root(ctx: typer.Context, lang: str | None = None) -> None:
     """Entry point for the coffinit CLI."""
 
     load_dotenv()
+    # Allow language selection via CLI option or COFFINIT_LANG environment variable
+    env_lang = os.getenv("COFFINIT_LANG")
+    selected = lang or env_lang or "ja"
+    set_locale(selected)
     if ctx.invoked_subcommand is None:
         _print_banner()
 
@@ -67,23 +73,12 @@ def check(repository: str) -> None:
     except ValueError as error:
         _print_error(str(error))
     except Exception:  # pragma: no cover - last resort safety net for the CLI boundary
-        _print_error("なんか葬儀場で事故が起きたみたいだ。")
+        _print_error(t("errors.generic"))
 
 
 def _print_banner() -> None:
-    banner = Text(
-        """
-    _________________________
-   |                         |
-   |     🪣 coffinit       |
-   |  Things OSS projects    |
-   |  do before they die.    |
-   |_________________________|
-
-  Usage: coffinit check <owner>/<repo>
-        """.strip("\n"),
-        justify="left",
-    )
+    banner_text = t("banner")
+    banner = Text(banner_text.strip("\n"), justify="left")
     console.print(Panel.fit(banner, border_style="cyan"))
 
 

@@ -8,6 +8,7 @@ import os
 from typing import Any, Iterable
 
 import requests
+from .i18n import t
 
 
 BASE_URL = "https://api.github.com"
@@ -164,7 +165,7 @@ class GitHubClient:
 
     def _get_json(self, path: str, params: dict[str, Any] | None = None) -> Any:
         if not self._token:
-            raise GitHubNotConfiguredError("神父の名前も知らねぇのか？（GITHUB_TOKENを.envに設定しろ）")
+            raise GitHubNotConfiguredError(t("errors.token_missing"))
 
         url = f"{BASE_URL}{path}"
         headers = {"Authorization": f"Bearer {self._token}", "Accept": "application/vnd.github+json"}
@@ -172,22 +173,22 @@ class GitHubClient:
         try:
             response = self._session.get(url, headers=headers, params=params, timeout=20)
         except requests.RequestException as exc:  # pragma: no cover - network failures are environment dependent
-            raise GitHubNetworkError("霊柩車がパンクしちまった。") from exc
+            raise GitHubNetworkError(t("errors.network")) from exc
 
         if response.status_code == 404:
-            raise GitHubRepositoryNotFoundError("この棺桶は空だ。死に損ないのジジババが終活のために買ったものなようだ。")
+            raise GitHubRepositoryNotFoundError(t("errors.repo_not_found"))
         if response.status_code == 403:
             if response.headers.get("X-RateLimit-Remaining") == "0" or "rate limit" in response.text.lower():
-                raise GitHubRateLimitError("神父は今日はお休みだってよ。")
-            raise GitHubPrivateRepositoryError("おいおい、家族以外葬儀の立ち合いはできねぇぜ？")
+                raise GitHubRateLimitError(t("errors.rate_limit"))
+            raise GitHubPrivateRepositoryError(t("errors.private_repo"))
         if response.status_code == 429:
-            raise GitHubRateLimitError("神父は今日はお休みだってよ。")
+            raise GitHubRateLimitError(t("errors.rate_limit"))
         if response.status_code >= 400:
-            raise GitHubAPIError("なんか葬儀場で事故が起きたみたいだ。")
+            raise GitHubAPIError(t("errors.generic"))
 
         payload = response.json()
         if isinstance(payload, dict) and payload.get("message", "").lower().startswith("api rate limit"):
-            raise GitHubRateLimitError("神父は今日はお休みだってよ。")
+            raise GitHubRateLimitError(t("errors.rate_limit"))
         return payload
 
     def _first_datetime_from_items(self, items: Iterable[dict[str, Any]], path: tuple[str, ...]) -> datetime | None:
