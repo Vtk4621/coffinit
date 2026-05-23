@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coffinit"
+version = "0.1.0"
+description = "GitHub OSSの死活を診断するCLIツール"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "kemy-jp" },
+]
+dependencies = [
+  "typer>=0.12,<1",
+  "rich>=13,<14",
+  "python-dotenv>=1,<2",
+  "requests>=2.31,<3",
+]
+
+[project.scripts]
+coffinit = "coffinit.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["coffinit*"]

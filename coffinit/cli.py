@@ -34,7 +34,7 @@ app = typer.Typer(add_completion=False, help="GitHub OSSの生死を診断する
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context) -> None:
+def root(ctx: typer.Context) -> None:
     """Entry point for the coffinit CLI."""
 
     load_dotenv()
@@ -92,5 +92,11 @@ def _print_error(message: str) -> None:
     raise typer.Exit(code=1)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the Typer application."""
+
     app()
+
+
+if __name__ == "__main__":
+    main()
