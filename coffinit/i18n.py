@@ -139,11 +139,27 @@ def t(key: str) -> str:
     """
 
     parts = key.split(".")
-    node: Any = MESSAGES.get(_LOCALE, {})
-    for part in parts:
-        if not isinstance(node, dict):
-            return key
-        node = node.get(part)
-        if node is None:
-            return key
+
+    def _lookup(locale: str) -> Any:
+        node: Any = MESSAGES.get(locale, {})
+        for part in parts:
+            if not isinstance(node, dict):
+                return None
+            node = node.get(part)
+            if node is None:
+                return None
+        return node
+
+    # Special behavior: keep Japanese original for error messages and
+    # append English translation in parentheses when locale is 'en'.
+    if _LOCALE == "en" and parts and parts[0] == "errors":
+        ja_msg = _lookup("ja")
+        en_msg = _lookup("en")
+        if ja_msg and en_msg and str(ja_msg) != str(en_msg):
+            return f"{ja_msg} ({en_msg})"
+        return str(en_msg or ja_msg or key)
+
+    node = _lookup(_LOCALE)
+    if node is None:
+        return key
     return str(node)
