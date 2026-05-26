@@ -16,7 +16,8 @@ MESSAGES: dict[str, dict[str, Any]] = {
         "banner": """
     _________________________
    |                         |
-   |     🪣 coffinit       |
+   |    _|_                  |
+   |     |  coffinit         |
    |  Things OSS projects    |
    |  do before they die.    |
    |_________________________|

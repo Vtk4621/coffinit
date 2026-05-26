@@ -35,7 +35,7 @@ except PackageNotFoundError:  # pragma: no cover - package metadata is unavailab
 
 
 console = Console()
-app = typer.Typer(add_completion=False, help="GitHub OSSの生死を診断するCLIです。")
+app = typer.Typer(add_completion=False, help="A CLI tool that diagnoses the life or death of a GitHub OSS project.")
 
 
 def _read_key() -> str:

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "coffinit"
 version = "0.1.0"
-description = "GitHub OSSの死活を診断するCLIツール"
+description = "A CLI tool that diagnoses the life or death of a GitHub OSS project."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
